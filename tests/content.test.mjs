@@ -240,12 +240,12 @@ test('opening a collaboration Reel from an unfollowed profile keeps native playb
   p.window.close();
 });
 
-test('posts supplied by Following keep their native viewer regardless of suggestion wording', () => {
+test('hidden suggested posts do not authorize a Reel viewer from Following', () => {
   const p = page('<main><article><header><span>Suggested for you</span></header><a href="/stranger/reel/SUGGESTED/">Reel</a></article></main>');
   p.window.history.pushState({}, '', '/stranger/reel/SUGGESTED/');
   p.document.querySelector('main').innerHTML = '<article><video></video></article>';
   p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
-  assert.deepEqual(p.redirects, []);
+  assert.deepEqual(p.redirects, ['https://www.instagram.com/?variant=following']);
   p.window.close();
 });
 
@@ -369,7 +369,20 @@ test('a native photo arriving after the empty state becomes visible', async () =
   p.window.close();
 });
 
-test('Following hides only the account sidebar while preserving native feed content', () => {
+test('filtered feed posts retain a tiny measurable slot for Instagram’s virtual scrolling', () => {
+  const p = page('<main><div style="padding-bottom: 18000px"><article id="ad"><header><span>Sponsored</span></header><img></article><article id="friend"><img></article></div></main>');
+  const ad = p.document.getElementById('ad');
+  const style = p.window.getComputedStyle(ad);
+  assert.notEqual(style.display, 'none', 'Instagram must still be able to measure the article');
+  assert.equal(style.visibility, 'hidden');
+  assert.ok(parseFloat(style.minHeight) > 0, 'A zero-height item can stall the native virtual list');
+  assert.ok(parseFloat(style.maxHeight) <= 1, 'The filtered content should not leave a post-sized gap');
+  assert.equal(style.overflow, 'hidden');
+  assert.equal(ad.parentElement.style.paddingBottom, '18000px', 'Instagram owns its virtualization offsets');
+  assert.notEqual(p.window.getComputedStyle(p.document.getElementById('friend')).visibility, 'hidden');
+});
+
+test('Following filters labeled posts and account suggestions while preserving captions', () => {
   const p = page(`<nav><a id="reels" href="/reels/">Reels</a></nav><main><div>
     <article id="suggested"><header><span>Suggested for you</span><button>Follow</button></header><img></article>
     <article id="sponsored"><header><span>Sponsored</span></header><img></article>
@@ -383,12 +396,64 @@ test('Following hides only the account sidebar while preserving native feed cont
         <div><a href="/stranger/">Stranger</a><button>Follow</button></div></div>
       <footer id="footer">About Instagram</footer></aside></div></main>`);
   for (const id of ['reels', 'suggested-accounts']) assert.equal(p.window.getComputedStyle(p.document.getElementById(id)).display, 'none', id);
-  for (const id of ['suggested', 'sponsored', 'friend', 'suggested-posts', 'suggested-reels', 'discover', 'account', 'footer']) {
+  for (const id of ['suggested', 'sponsored']) assert.equal(p.window.getComputedStyle(p.document.getElementById(id)).visibility, 'hidden', id);
+  for (const id of ['friend', 'suggested-posts', 'suggested-reels', 'discover', 'account', 'footer']) {
     for (let node = p.document.getElementById(id); node && node !== p.document.body; node = node.parentElement) {
       assert.notEqual(p.window.getComputedStyle(node).display, 'none', id);
     }
   }
   p.window.close();
+});
+
+for (const label of ['Sponsored', 'Paid partnership', 'Suggested for you']) {
+  test(`Following hides a div-based post with the ${label} metadata label`, () => {
+    const p = page(`<main><article id="filtered"><div><div>
+      <div><div><a href="/creator/">Creator</a><a href="/p/ABC/">1h</a><div><span>${label}</span></div></div>
+        <button><svg aria-label="More options"></svg></button></div>
+      <div><img alt="Photo"></div></div><div><button><svg aria-label="Like"></svg></button><div>Caption</div></div></div></article>
+      <article id="native"><div><div><a href="/friend/">Friend</a><button><svg aria-label="More options"></svg></button></div>
+        <img alt="Photo"><div><span>${label}</span></div><button>Like</button></div></article></main>`);
+    assert.equal(p.window.getComputedStyle(p.document.getElementById('filtered')).visibility, 'hidden');
+    assert.notEqual(p.window.getComputedStyle(p.document.getElementById('native')).visibility, 'hidden');
+    assert.deepEqual(p.redirects, []);
+  });
+}
+
+test('a sponsored label arriving during playback hides the post and pauses its video', async () => {
+  const p = page('<main><article><header><span id="label"></span></header><video></video></article></main>');
+  const video = p.document.querySelector('video');
+  let pauses = 0;
+  Object.defineProperty(video, 'paused', { get: () => pauses > 0 });
+  video.pause = () => pauses++;
+  p.document.getElementById('label').textContent = 'Sponsored';
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.querySelector('article')).visibility, 'hidden');
+  assert.equal(pauses, 1);
+  p.document.getElementById('label').textContent = 'Friend';
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('article')).visibility, 'hidden');
+});
+
+test('the suggestion preference restores filtered posts live and hides later arrivals', async () => {
+  const p = page('<main><article><header><span>Sponsored</span></header><img></article></main>', '/?variant=following', { hideSuggestions: false });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const post = p.document.querySelector('article');
+  assert.notEqual(p.window.getComputedStyle(post).visibility, 'hidden');
+  p.change({ hideSuggestions: { newValue: true } });
+  assert.equal(p.window.getComputedStyle(post).visibility, 'hidden');
+  p.document.querySelector('main').insertAdjacentHTML('beforeend', '<article id="later"><header><span>Suggested for you</span></header><img></article>');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.getElementById('later')).visibility, 'hidden');
+  p.change({ hideSuggestions: { newValue: false } });
+  for (const article of p.document.querySelectorAll('article')) assert.notEqual(p.window.getComputedStyle(article).visibility, 'hidden');
+});
+
+test('labeled posts remain native on intentionally opened profiles and photo viewers', () => {
+  for (const path of ['/creator/', '/p/PHOTO/']) {
+    const p = page('<main><article><header><span>Sponsored</span><span>Suggested for you</span></header><img></article></main>', path);
+    assert.notEqual(p.window.getComputedStyle(p.document.querySelector('article')).display, 'none');
+    assert.deepEqual(p.redirects, []);
+  }
 });
 
 test('Following leaves inline Similar accounts controls untouched', () => {
@@ -408,13 +473,13 @@ test('Following feed videos keep native playback', () => {
   p.window.close();
 });
 
-test('Following does not pause native videos based on suggestion wording', () => {
+test('hidden suggested videos cannot start playing', () => {
   const p = page('<main><article><header><span>Suggested for you</span></header><video></video></article></main>');
   const video = p.document.querySelector('video');
   let pauses = 0;
   video.pause = () => { pauses += 1; };
   video.dispatchEvent(new p.window.Event('play'));
-  assert.equal(pauses, 0);
+  assert.equal(pauses, 1);
   p.window.close();
 });
 

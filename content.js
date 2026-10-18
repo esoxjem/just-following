@@ -54,6 +54,21 @@
         }
       }
       if (following && settings.hideSuggestions) {
+        for (const article of doc.querySelectorAll('main article')) {
+          const headers = [...article.querySelectorAll('header')];
+          // Instagram also uses divs for metadata. The first ancestor shared by
+          // the options menu and author links stays above media and captions.
+          for (const menu of article.querySelectorAll('[aria-label="More options"]')) {
+            let header = menu.parentElement;
+            while (header && header !== article && !header.querySelector('a[href]')) header = header.parentElement;
+            if (header && header !== article && !header.querySelector('video, [aria-label="Like"], [aria-label="Comment"]')) headers.push(header);
+          }
+          if (headers.some(header => [...header.querySelectorAll('span, div, a')]
+            .some(marker => ['Suggested for you', 'Sponsored', 'Paid partnership'].includes(marker.textContent.trim())))) {
+            article.setAttribute('data-jf-hidden', '');
+            for (const video of article.querySelectorAll('video')) if (!video.paused) video.pause();
+          }
+        }
         for (const link of doc.querySelectorAll(`main a[href="/explore/people/"], main a[href="${url.origin}/explore/people/"]`)) {
           if (link.closest('article')) continue;
           let sidebar = link.parentElement;

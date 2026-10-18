@@ -35,6 +35,13 @@ test('popup loads four labeled switches with agreed defaults and saved overrides
   assert.equal(p.writes.length, 0);
 });
 
+test('the suggestion switch explains that it also hides sponsored posts', async () => {
+  const p = await popup();
+  const label = p.doc.querySelector('[name="hideSuggestions"]').labels[0];
+  assert.match(label.textContent, /Hide suggestions and ads/);
+  assert.match(label.textContent, /Suggested accounts, posts, and sponsored posts/);
+});
+
 test('switches save only their own preference and retain the other options', async () => {
   const p = await popup({ hideStories: true });
   p.doc.querySelector('[name="hideExplore"]').click();

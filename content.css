@@ -24,9 +24,20 @@ html[data-jf-ready]:not([data-jf-reels]) a[href$="/reels/"] {
   display: none !important;
 }
 
-html[data-jf-ready] [data-jf-hidden],
+html[data-jf-ready] [data-jf-hidden]:not(article),
 html[data-jf-ready][data-jf-route="search"] main a[href^="/p/"] {
   display: none !important;
+}
+
+/* Zero-height articles stall Instagram's virtual list. Keep a measurable slot. */
+html[data-jf-ready] article[data-jf-hidden] {
+  height: 1px !important;
+  min-height: 1px !important;
+  max-height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
 }
 
 /* Explore loads beside the native search widget, before any post links exist. */
