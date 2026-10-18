@@ -29,6 +29,11 @@ html[data-jf-ready][data-jf-route="search"] main a[href^="/p/"] {
   display: none !important;
 }
 
+/* Explore loads beside the native search widget, before any post links exist. */
+html[data-jf-ready][data-jf-route="search"] main > div > div:not(:has(input, [role="search"])) [role="progressbar"] {
+  display: none !important;
+}
+
 html[data-jf-ready][data-jf-hide-suggestions]:not([data-jf-route="following"]):not([data-jf-route="profile"]) button:has(svg[aria-label="Similar accounts"]),
 html[data-jf-ready][data-jf-hide-suggestions]:not([data-jf-route="following"]):not([data-jf-route="profile"]) [role="button"]:has(svg[aria-label="Similar accounts"]) {
   display: none !important;

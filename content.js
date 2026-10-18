@@ -5,6 +5,7 @@
     const doc = win.document;
     const allowedPosts = new Set();
     let redirectFrom;
+    let searchFocused = false;
     const api = globalThis.browser?.storage;
     let settings = globalThis.JFSettings.normalize();
     let ready = !api;
@@ -39,7 +40,13 @@
         navigate(`${url.origin}/?variant=following`);
       }
       if (!blocked) redirectFrom = undefined;
+      if (!searchPage) searchFocused = false;
       if (searchPage) {
+        const input = doc.querySelector('main input[aria-label="Search input"]');
+        if (input && !searchFocused) {
+          searchFocused = true;
+          input.focus();
+        }
         for (const tile of doc.querySelectorAll('main a[href^="/p/"]')) {
           let branch = tile;
           while (branch.parentElement && !branch.parentElement.matches('main') && !branch.parentElement.querySelector('input, [role="search"]')) branch = branch.parentElement;

@@ -281,6 +281,57 @@ test('Home clicks bypass Instagram’s original recommended-feed handler', () =>
   p.window.close();
 });
 
+test('Search focuses the native input when it opens', () => {
+  const p = page('<main><input aria-label="Search input"></main>', '/explore/');
+  assert.equal(p.document.activeElement, p.document.querySelector('input'));
+});
+
+test('Search hides the Explore loader before tiles arrive and keeps its own loading state', () => {
+  const p = page(`<main><div>
+    <div><input aria-label="Search input"><div id="search-loading" role="progressbar"></div></div>
+    <div><div id="explore-loading" role="progressbar"><svg aria-label="Loading..."></svg></div></div>
+  </div></main><aside><div id="messages-loading" role="progressbar"></div></aside>`, '/explore/');
+  assert.equal(p.window.getComputedStyle(p.document.getElementById('explore-loading')).display, 'none');
+  for (const id of ['search-loading', 'messages-loading']) {
+    assert.notEqual(p.window.getComputedStyle(p.document.getElementById(id)).display, 'none', id);
+  }
+});
+
+test('Search focuses an input rendered later without reclaiming focus after updates', async () => {
+  const p = page('<main></main><textarea aria-label="Message"></textarea>', '/explore/search/');
+  p.document.querySelector('main').innerHTML = '<input aria-label="Search input"><div id="results"></div>';
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const input = p.document.querySelector('input');
+  assert.equal(p.document.activeElement, input);
+  input.value = 'kodak';
+  const message = p.document.querySelector('textarea');
+  message.focus();
+  p.document.getElementById('results').textContent = 'Account results';
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.document.activeElement, message);
+  assert.equal(input.value, 'kodak');
+
+  p.window.history.pushState({}, '', '/friend/');
+  p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
+  p.window.history.pushState({}, '', '/explore/search/');
+  p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
+  assert.equal(p.document.activeElement, input);
+  assert.equal(input.value, 'kodak');
+});
+
+test('disabling Explore hiding restores its loader and leaves focus native', async () => {
+  const p = page(`<main><div><div><input aria-label="Search input"></div>
+    <div><div id="loader" role="progressbar"></div></div></div></main>`, '/explore/', { hideExplore: false });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.notEqual(p.document.activeElement, p.document.querySelector('input'));
+  assert.notEqual(p.window.getComputedStyle(p.document.getElementById('loader')).display, 'none');
+  p.change({ hideExplore: { newValue: true } });
+  assert.equal(p.document.activeElement, p.document.querySelector('input'));
+  assert.equal(p.window.getComputedStyle(p.document.getElementById('loader')).display, 'none');
+  p.change({ hideExplore: { newValue: false } });
+  assert.notEqual(p.window.getComputedStyle(p.document.getElementById('loader')).display, 'none');
+});
+
 test('Search retains its input and account results while Explore posts disappear', () => {
   const p = page(`<main><div><div id="search"><input aria-label="Search input"></div>
     <div id="results"><a href="/friend/">Friend</a></div>

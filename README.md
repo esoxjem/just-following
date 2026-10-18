@@ -27,7 +27,7 @@ The `storage` permission stores these four preferences only. No account data or 
 
 Firefox 142 or newer is required. Temporary add-ons disappear when the browser restarts; load the manifest again to continue testing. In the debugging page, use **Reload** after editing the extension. This MVP is unsigned and has not been published to Firefox Add-ons.
 
-Search shares Instagram's `/explore/` page. Its search box and account results remain usable, while its recommended post grid is hidden. The dedicated Reels feed, hashtag discovery, location discovery, and suggested-account URLs return to Following. Photos on intentionally opened profiles remain available.
+Search shares Instagram's `/explore/` page. With Explore hiding enabled, its native search box opens focused so you can type immediately; its recommended post grid and loading spinner are hidden. Account results and their loading state stay native. Focus is set once per visit, so page updates do not pull it away from another control. The dedicated Reels feed, hashtag discovery, location discovery, and suggested-account URLs return to Following. Photos on intentionally opened profiles remain available.
 
 Profile Posts, Reels, Reposts, and Tagged pages keep all native content and controls without checking follow status or hiding suggestions. Posts opened from a profile or the Following feed keep their native viewer and video playback. This source context stays in memory for the current page session; a direct video URL in a new tab or after a full reload returns to Following when its source cannot be confirmed. No following list is fetched or stored. Collaboration posts remain available even when their URL names another author.
 
@@ -49,6 +49,8 @@ The unsigned package is written to `artifacts/just_following-0.1.0.zip`. Packagi
 `settings.js` defines shared defaults. `popup.html`, `popup.css`, and `popup.js` provide the toolbar settings interface. `content.js` listens for local preference changes and owns route guards and dynamic-page filtering. `content.css` hides known distraction surfaces as the page renders. Tests use real jsdom documents and events; only full-page navigation and native media playback need test substitutes. Each behavior was introduced through a failing test before its implementation.
 
 ## Verification and limits
+
+On 18 October 2026, verified search autofocus in Zen after a full load and Home → Search navigation: typing without clicking entered the native search field and returned account results. Explore tiles and their loader remained hidden. Left Search empty and focused after testing. Console inspection showed native Instagram cookie and CSP messages with no extension errors. All 80 tests, lint, and build passed.
 
 On 18 October 2026, verified that clicking **Just Following** in Zen's extensions menu opens the minimal settings popup with exactly four toggles and the agreed defaults. Tested live Reels-navigation and suggested-sidebar toggles and reset on the final build. The four filters were also verified during popup development: Explore recommendations appear/disappear while search stays available; Story highlights and native Story rails hide/restore; preferences persist after reopening/reloading. Home always opens Following. Final console inspection found no Just Following errors; native Instagram cookie, CSP, and connection messages remain. All 76 tests, lint, and build passed. Live popup visual review covered the light theme; dark styling follows the browser's color-scheme preference.
 
