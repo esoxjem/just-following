@@ -10,17 +10,45 @@
     "96": "icon.svg",
     "128": "icon.svg"
   },
-  "content_scripts": [{
-    "matches": ["https://www.instagram.com/*", "https://instagram.com/*"],
-    "js": ["content.js"],
-    "css": ["content.css"],
-    "run_at": "document_start"
-  }],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://instagram.com/*"
+      ],
+      "js": [
+        "settings.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_start"
+    }
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "just-following@local.just-following",
       "strict_min_version": "142.0",
-      "data_collection_permissions": {"required": ["none"]}
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_title": "Just Following",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.svg",
+      "32": "icon.svg",
+      "48": "icon.svg",
+      "96": "icon.svg",
+      "128": "icon.svg"
     }
   }
 }

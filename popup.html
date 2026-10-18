@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Just Following</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="settings.js" defer></script>
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <header><img src="icon.svg" width="24" height="24" alt=""><h1>Just Following</h1></header>
+  <main>
+    <fieldset id="options" disabled>
+      <legend class="sr-only">Instagram options</legend>
+      <label class="option"><span><strong>Hide Explore recommendations</strong><small>Keep account search available.</small></span><input type="checkbox" role="switch" name="hideExplore"></label>
+      <label class="option"><span><strong>Block the Reels feed</strong><small>Keep videos in posts and profiles.</small></span><input type="checkbox" role="switch" name="blockReels"></label>
+      <label class="option"><span><strong>Hide suggested accounts</strong><small>Remove suggestions beside Following.</small></span><input type="checkbox" role="switch" name="hideSuggestions"></label>
+      <label class="option"><span><strong>Hide Stories</strong><small>Hide Story links and the Stories rail.</small></span><input type="checkbox" role="switch" name="hideStories"></label>
+    </fieldset>
+  </main>
+  <footer><button id="reset" type="button" disabled>Reset to defaults</button><p id="status" role="status" aria-live="polite">Loading settings…</p></footer>
+</body>
+</html>

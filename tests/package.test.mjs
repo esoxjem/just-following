@@ -12,7 +12,7 @@ test('Firefox package runs only on Instagram with no data collection', () => {
   assert.deepEqual(manifest.browser_specific_settings.gecko.data_collection_permissions.required, ['none']);
   assert.deepEqual(manifest.content_scripts[0].matches, ['https://www.instagram.com/*', 'https://instagram.com/*']);
   assert.equal(manifest.content_scripts[0].run_at, 'document_start');
-  assert.deepEqual(manifest.permissions ?? [], []);
+  assert.deepEqual(manifest.permissions ?? [], ['storage']);
   assert.ok(!manifest.background, 'No background account access is needed');
 });
 
@@ -32,4 +32,12 @@ test('Firefox can load a self-contained icon at each extension display size', ()
     assert.equal(document.documentElement.getAttribute('viewBox'), '0 0 24 24');
     assert.equal(document.querySelector('image, script, foreignObject, [href]'), null);
   }
+});
+
+test('toolbar action opens the local popup with shared settings loaded before content', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../manifest.json', import.meta.url), 'utf8'));
+  assert.equal(manifest.action?.default_popup, 'popup.html');
+  assert.deepEqual(manifest.content_scripts[0].js, ['settings.js', 'content.js']);
+  assert.ok(existsSync(new URL('../popup.js', import.meta.url)));
+  assert.ok(existsSync(new URL('../popup.css', import.meta.url)));
 });

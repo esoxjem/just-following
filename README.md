@@ -4,6 +4,21 @@ A quieter Instagram for Firefox and Zen. Home opens Instagram's native **Followi
 
 No backend, telemetry, account scraping, stored credentials, or private Instagram API. The extension only modifies Instagram pages in your browser. It makes no account changes and does not fetch account data or send telemetry. Firefox asks for access to Instagram so the content script can run there.
 
+## Popup settings
+
+Click **Just Following** in Zen's extensions menu to open the settings popup. Its minimal light/dark appearance follows the browser's color-scheme preference. Changes save automatically in local extension storage and apply to open Instagram tabs without reloading.
+
+| Setting | Default |
+| --- | --- |
+| Hide Explore recommendations | On |
+| Block the Reels feed | On |
+| Hide suggested accounts | On |
+| Hide Stories | Off |
+
+Home always opens Following. **Reset to defaults** restores the four settings. Reels blocking preserves videos in Following and profile posts. Suggested-account hiding covers the Following sidebar; native profile content and controls remain available. Story hiding removes native Story rails and highlight links and redirects Story viewer URLs to Following.
+
+The `storage` permission stores these four preferences only. No account data or following list is saved, and settings are not synced to another browser.
+
 ## Try it
 
 1. Open `about:debugging#/runtime/this-firefox` in Firefox or Zen.
@@ -31,9 +46,11 @@ npm run build
 
 The unsigned package is written to `artifacts/just_following-0.1.0.zip`. Packaging includes only the extension runtime files.
 
-`content.js` owns route guards and dynamic-page filtering. `content.css` hides known distraction surfaces as the page renders. Tests use real jsdom documents and events; only full-page navigation and native media playback need test substitutes. Each behavior was introduced through a failing test before its implementation.
+`settings.js` defines shared defaults. `popup.html`, `popup.css`, and `popup.js` provide the toolbar settings interface. `content.js` listens for local preference changes and owns route guards and dynamic-page filtering. `content.css` hides known distraction surfaces as the page renders. Tests use real jsdom documents and events; only full-page navigation and native media playback need test substitutes. Each behavior was introduced through a failing test before its implementation.
 
 ## Verification and limits
+
+On 18 October 2026, verified that clicking **Just Following** in Zen's extensions menu opens the minimal settings popup with exactly four toggles and the agreed defaults. Tested live Reels-navigation and suggested-sidebar toggles and reset on the final build. The four filters were also verified during popup development: Explore recommendations appear/disappear while search stays available; Story highlights and native Story rails hide/restore; preferences persist after reopening/reloading. Home always opens Following. Final console inspection found no Just Following errors; native Instagram cookie, CSP, and connection messages remain. All 76 tests, lint, and build passed. Live popup visual review covered the light theme; dark styling follows the browser's color-scheme preference.
 
 Verified `zhenwei.film` in Zen after hiding the left sidebar's Reels link: the profile Reels tab, header, highlights, native account suggestions, and all 24 loaded tiles remained visible. No profile elements were marked hidden by the extension. The console showed no Just Following errors; all 57 tests, lint, and build passed.
 

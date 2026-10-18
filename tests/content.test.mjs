@@ -13,13 +13,19 @@ afterEach(() => {
 
 const sourcePath = new URL('../content.js', import.meta.url);
 const cssPath = new URL('../content.css', import.meta.url);
-function page(html = '', path = '/?variant=following') {
+function page(html = '', path = '/?variant=following', storage, isolated = false) {
   const errors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => { errors.push(error); pageErrors.push(error.message); });
   const dom = new JSDOM(html, { url: `https://www.instagram.com${path}`, runScripts: 'outside-only', virtualConsole });
   openPages.add(dom.window);
   const redirects = [];
+  let changeListener;
+  if (storage) dom.window.browser = { storage: {
+    local: { get: async () => storage },
+    onChanged: { addListener: listener => { changeListener = listener; } }
+  } };
+  dom.window.eval(readFileSync(new URL('../settings.js', import.meta.url), 'utf8'));
   if (existsSync(cssPath)) {
     const style = dom.window.document.createElement('style');
     style.textContent = readFileSync(cssPath, 'utf8');
@@ -28,9 +34,13 @@ function page(html = '', path = '/?variant=following') {
   if (existsSync(sourcePath)) {
     dom.window.module = { exports: {} };
     dom.window.eval(readFileSync(sourcePath, 'utf8'));
-    dom.window.module.exports.start(dom.window, href => redirects.push(href));
+    const target = isolated ? new Proxy(dom.window, {
+      get: (win, key) => ['JFSettings', 'browser'].includes(key) ? undefined
+        : ['addEventListener', 'setInterval'].includes(key) ? win[key].bind(win) : Reflect.get(win, key)
+    }) : dom.window;
+    dom.window.module.exports.start(target, href => redirects.push(href));
   }
-  return { dom, window: dom.window, document: dom.window.document, redirects, errors };
+  return { dom, window: dom.window, document: dom.window.document, redirects, errors, change: changes => changeListener(changes, "local") };
 }
 
 // Real DOM and events. Only the full-page navigation boundary is replaced in jsdom.
@@ -443,4 +453,91 @@ test('video slides inside a followed carousel keep native playback', () => {
   video.dispatchEvent(new p.window.Event('play'));
   assert.equal(pauses, 0);
   p.window.close();
+});
+
+
+test('Home always opens Following even if removed preferences were previously saved', async () => {
+  const p = page('<main>Home</main>', '/', { enabled: false, alwaysFollowing: false });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(p.redirects, ['https://www.instagram.com/?variant=following']);
+});
+
+test('Reels preference restores dedicated navigation and native video playback', async () => {
+  const p = page('<nav><a id="reels" href="/reels/">Reels</a></nav><main><article><video></video></article></main>', '/reel/ABC/', { blockReels: false });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(p.redirects, []);
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#reels')).display, 'none');
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('article')).display, 'none');
+  let pauses = 0;
+  p.document.querySelector('video').pause = () => pauses++;
+  p.document.querySelector('video').dispatchEvent(new p.window.Event('play'));
+  assert.equal(pauses, 0);
+});
+
+test('Explore preference restores discovery without changing Reels blocking', async () => {
+  const p = page('<main><input aria-label="Search"><a id="tile" href="/p/ABC/">Discovery post</a></main>', '/explore/', { hideExplore: false });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#tile')).display, 'none');
+  p.window.history.pushState({}, '', '/explore/tags/photo/');
+  p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
+  assert.deepEqual(p.redirects, []);
+});
+
+test('suggestion preference restores the Following sidebar in place', async () => {
+  const p = page('<main><section id="suggestions"><h4>Suggested for you</h4><a href="/explore/people/">See all</a><button>Follow</button></section><article>A native post</article></main>', '/?variant=following', {});
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.querySelector('#suggestions')).display, 'none');
+  p.change({ hideSuggestions: { newValue: false } });
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#suggestions')).display, 'none');
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('article')).display, 'none');
+});
+
+test('Stories can be hidden without hiding native posts and restored live', async () => {
+  const p = page('<main><div aria-label="Stories" id="rail"><a href="/stories/friend/12/">Friend</a></div><article id="post">Photo</article></main>', '/?variant=following', { hideStories: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.querySelector('#rail')).display, 'none');
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#post')).display, 'none');
+  p.change({ hideStories: { newValue: false } });
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#rail')).display, 'none');
+  p.change({ hideStories: { newValue: true } });
+  p.window.history.pushState({}, '', '/stories/friend/12/');
+  p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
+  assert.equal(p.redirects.length, 1);
+});
+
+
+test('Firefox isolated globals load saved preferences without accessing page globals', async () => {
+  const p = page('<main>Explore</main>', '/explore/tags/photo/', { hideExplore: false }, true);
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(p.redirects, []);
+  assert.equal(p.document.documentElement.dataset.jfRoute, 'other');
+});
+
+test('Story hiding collapses the native menu rail including its paging control', async () => {
+  const p = page('<main><div role="menu" id="rail"><ul><li><a href="/stories/highlights/123/">Highlight</a></li></ul><button>Next</button></div><div role="menu" id="other">Account menu</div><article>Photo</article></main>', '/person/', { hideStories: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.querySelector('#rail')).display, 'none');
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#other')).display, 'none');
+});
+
+test('a preference changed during startup wins over a stale storage read', async () => {
+  let finish;
+  const saved = new Promise(resolve => { finish = resolve; });
+  const p = page('<main>Story</main>', '/stories/friend/12/', saved);
+  assert.deepEqual(p.redirects, []);
+  p.change({ hideStories: { newValue: false } });
+  finish({ hideStories: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.deepEqual(p.redirects, []);
+  assert.equal(p.document.documentElement.dataset.jfRoute, 'stories');
+  p.change({ hideStories: { newValue: true } });
+  assert.equal(p.redirects.length, 1);
+});
+
+test('Story hiding removes the native button rail when supplied on Following', async () => {
+  const p = page('<main><div role="presentation" id="rail"><div><ul><li><div role="button" aria-label="Story by friend, not seen">Friend</div></li></ul></div><button>Next</button></div><article id="post">Native photo</article></main>', '/?variant=following', { hideStories: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.querySelector('#rail')).display, 'none');
+  assert.notEqual(p.window.getComputedStyle(p.document.querySelector('#post')).display, 'none');
+  assert.deepEqual(p.redirects, []);
 });
