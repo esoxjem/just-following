@@ -1,0 +1,40 @@
+/* Hide the outgoing page before Instagram can paint a distracting feed. */
+html[data-jf-route="redirecting"] main,
+html[data-jf-route="redirecting"] [role="main"] {
+  visibility: hidden !important;
+}
+
+/* Semantic URLs survive Instagram's changing generated class names. */
+a[href="/reels/"],
+a[href="https://www.instagram.com/reels/"],
+html:not([data-jf-reels]) a[href^="/reel/"],
+html:not([data-jf-reels]) a[href^="/reels/"],
+html:not([data-jf-reels]) a[href^="https://www.instagram.com/reel/"],
+html:not([data-jf-reels]) a[href^="https://www.instagram.com/reels/"] {
+  display: none !important;
+}
+
+html:not([data-jf-reels]):not([data-jf-route="stories"]) article:has(video):not(:has([aria-label^="Go to slide "])) {
+  display: none !important;
+}
+
+html:not([data-jf-reels]) a:has(svg[aria-label="Reel"]),
+html:not([data-jf-reels]) a:has(svg[aria-label="Reels"]),
+html:not([data-jf-reels]) a[href$="/reels/"] {
+  display: none !important;
+}
+
+[data-jf-hidden],
+html[data-jf-route="search"] main a[href^="/p/"] {
+  display: none !important;
+}
+
+html:not([data-jf-route="following"]):not([data-jf-route="profile"]) button:has(svg[aria-label="Similar accounts"]),
+html:not([data-jf-route="following"]):not([data-jf-route="profile"]) [role="button"]:has(svg[aria-label="Similar accounts"]) {
+  display: none !important;
+}
+
+html:not([data-jf-reels]) main a[href*="/reel/"],
+html:not([data-jf-reels]) a:has(svg[aria-label="Clip"]) {
+  display: none !important;
+}
