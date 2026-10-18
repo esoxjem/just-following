@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modularity Review"
+  short_description: "Find costly coupling and boundary problems"
+  default_prompt: "Use $modularity-review to analyze this codebase for costly coupling and boundary problems."

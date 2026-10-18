@@ -1,0 +1,4 @@
+interface:
+  display_name: "Deep Module Refactor"
+  short_description: "Refactor code toward deep module boundaries"
+  default_prompt: "Use $deep-module-refactor to refactor this code toward deeper modules with smaller interfaces."

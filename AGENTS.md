@@ -1,7 +1,10 @@
 # Project instructions
 
-- Use test-driven development skill for coding.
-- Use Systematic debugging skill for fixing bugs and issues
+- Use the [test-driven development skill](.agents/skills/test-driven-development/SKILL.md) for coding.
+- Use the [systematic debugging skill](.agents/skills/systematic-debugging/SKILL.md) for fixing bugs and issues.
+- Use the [modularity design skill](.agents/skills/modularity-design/SKILL.md) when designing or revising module boundaries and contracts.
+- Use the [modularity review skill](.agents/skills/modularity-review/SKILL.md) when reviewing architecture, coupling, and module boundaries.
+- Use the [deep module refactor skill](.agents/skills/deep-module-refactor/SKILL.md) when simplifying interfaces and moving implementation details into the modules that own them.
 - For Firefox Add-ons release preparation, submissions, or listing updates, use the [Firefox Add-ons release skill](.agents/skills/firefox-addons-release/SKILL.md).
 - Preserve Instagram's native posts, interactions, and account state. No private API, account scraping, telemetry, or backend.
 - Verify browser behavior in Zen; DOM fixtures alone do not prove compatibility with Instagram.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modularity Design"
+  short_description: "Turn requirements into balanced module boundaries"
+  default_prompt: "Use $modularity-design to design module boundaries and integration contracts from these requirements."
