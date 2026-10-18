@@ -14,6 +14,11 @@ html[data-jf-ready]:not([data-jf-reels]) a[href^="https://www.instagram.com/reel
   display: none !important;
 }
 
+/* Collapse the mobile Reels item's empty slot in Instagram's space-evenly bar. */
+html[data-jf-ready][data-jf-block-reels] div:has(> span:only-child > div:only-child > a:only-child:is([href="/reels/"], [href="https://www.instagram.com/reels/"])) {
+  display: none !important;
+}
+
 html[data-jf-ready]:not([data-jf-reels]):not([data-jf-route="stories"]) article[data-jf-standalone-video] {
   display: none !important;
 }

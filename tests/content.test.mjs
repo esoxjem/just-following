@@ -126,6 +126,28 @@ test('Reels entry points are hidden while Stories and native interactions remain
   p.window.close();
 });
 
+test('mobile navigation collapses the hidden Reels slot and restores it with the preference', async () => {
+  for (const href of ['/reels/', 'https://www.instagram.com/reels/']) {
+    const p = page(`<div id="navbar" style="display:flex;justify-content:space-evenly">
+      <div id="home"><span><div><a href="/">Home</a></div></span></div>
+      <div id="search"><span><div><a href="/explore/">Search</a></div></span></div>
+      <div id="reels-slot"><span><div><a href="${href}">Reels</a></div></span></div>
+      <div id="messages"><span><div><a href="/direct/inbox/">Messages</a></div></span></div>
+      <div id="new-post"><span><div><a href="/#">New post</a></div></span></div>
+      <div id="profile"><span><div><a href="/friend/">Profile</a></div></span></div>
+    </div><main><a id="profile-reels" href="/friend/reels/">Profile Reels</a></main>`, '/?variant=following', {});
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const slot = p.document.getElementById('reels-slot');
+    assert.equal(p.window.getComputedStyle(slot).display, 'none', href);
+    for (const id of ['navbar', 'home', 'search', 'messages', 'new-post', 'profile', 'profile-reels']) {
+      assert.notEqual(p.window.getComputedStyle(p.document.getElementById(id)).display, 'none', id);
+    }
+    p.change({ blockReels: { newValue: false } });
+    assert.notEqual(p.window.getComputedStyle(slot).display, 'none');
+    assert.notEqual(p.window.getComputedStyle(slot.querySelector('a')).display, 'none');
+  }
+});
+
 test('Following keeps Stories, Reel posts, and photo carousels', () => {
   const p = page(`<main><div aria-label="Stories" id="stories"><div role="menu"><button>Friend's story</button></div></div>
     <article id="video"><video></video><a id="reel" href="/friend/reel/ABC/"><svg aria-label="Clip"></svg></a><button>Like</button></article>
