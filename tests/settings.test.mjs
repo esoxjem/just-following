@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom';
 
 test('settings default to the agreed focus options and reject invalid saved values', () => {
   const win = new JSDOM('', { runScripts: 'outside-only' }).window;
-  const path = new URL('../settings.js', import.meta.url);
+  const path = new URL('../extension/settings.js', import.meta.url);
   if (existsSync(path)) win.eval(readFileSync(path, 'utf8'));
   assert.ok(win.JFSettings, 'Shared settings are available');
   const expected = { hideExplore: true, blockReels: true, hideSuggestions: true, hideStories: false };

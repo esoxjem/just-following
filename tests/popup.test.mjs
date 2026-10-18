@@ -6,7 +6,7 @@ const windows = [];
 afterEach(() => { for (const win of windows.splice(0)) win.close(); });
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 async function popup(saved = {}, set) {
-  const path = new URL('../popup.html', import.meta.url);
+  const path = new URL('../extension/popup.html', import.meta.url);
   assert.ok(existsSync(path), 'Popup HTML exists');
   const win = new JSDOM(readFileSync(path, 'utf8'), { runScripts: 'outside-only' }).window;
   windows.push(win);
@@ -16,8 +16,8 @@ async function popup(saved = {}, set) {
     local: { get: async () => saved, set: set || (async patch => { writes.push(patch); Object.assign(saved, patch); }) },
     onChanged: { addListener: listener => { change = listener; } }
   } };
-  win.eval(readFileSync(new URL('../settings.js', import.meta.url), 'utf8'));
-  win.eval(readFileSync(new URL('../popup.js', import.meta.url), 'utf8'));
+  win.eval(readFileSync(new URL('../extension/settings.js', import.meta.url), 'utf8'));
+  win.eval(readFileSync(new URL('../extension/popup.js', import.meta.url), 'utf8'));
   await tick();
   return { win, doc: win.document, writes, saved, change };
 }

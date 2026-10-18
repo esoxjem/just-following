@@ -11,8 +11,8 @@ afterEach(() => {
   assert.deepEqual(pageErrors.splice(0), [], 'Browser fixtures should not emit hidden errors');
 });
 
-const sourcePath = new URL('../content.js', import.meta.url);
-const cssPath = new URL('../content.css', import.meta.url);
+const sourcePath = new URL('../extension/content.js', import.meta.url);
+const cssPath = new URL('../extension/content.css', import.meta.url);
 function page(html = '', path = '/?variant=following', storage, isolated = false) {
   const errors = [];
   const virtualConsole = new VirtualConsole();
@@ -25,7 +25,7 @@ function page(html = '', path = '/?variant=following', storage, isolated = false
     local: { get: async () => storage },
     onChanged: { addListener: listener => { changeListener = listener; } }
   } };
-  dom.window.eval(readFileSync(new URL('../settings.js', import.meta.url), 'utf8'));
+  dom.window.eval(readFileSync(new URL('../extension/settings.js', import.meta.url), 'utf8'));
   if (existsSync(cssPath)) {
     const style = dom.window.document.createElement('style');
     style.textContent = readFileSync(cssPath, 'utf8');

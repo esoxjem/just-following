@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto';
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -41,18 +41,16 @@ test('npm amo reads Just Following with Watchbox’s short-lived JWT authenticat
   assert.ok(!result.stdout.includes(env.WEB_EXT_API_SECRET));
 });
 
-test('release packages exclude credentials and store submission files', { timeout: 10000 }, async t => {
-  const dir = await mkdtemp(join(tmpdir(), 'just-following-package-'));
-  t.after(() => rm(dir, { recursive: true, force: true }));
-  const source = join(dir, 'source'), artifacts = join(dir, 'artifacts');
-  await mkdir(source);
-  await writeFile(join(source, 'manifest.json'), JSON.stringify({ manifest_version: 3, name: 'Package test', version: '1.0' }));
-  for (const file of ['scripts/amo.mjs', 'store/listing.json', 'store/submission.json', 'store/icons/icon.png', 'tests/test.mjs', 'docs/development.md', 'artifacts/old.txt', 'README.md', 'AGENTS.md', 'package.json', '.env', '.env.example']) {
-    await mkdir(join(source, file, '..'), { recursive: true });
-    await writeFile(join(source, file), 'must not ship');
-  }
-  await exec(process.execPath, ['node_modules/web-ext/bin/web-ext.js', 'build', '--source-dir', source, '--artifacts-dir', artifacts]);
+test('Firefox builds only the shared extension, excluding native apps and release files', { timeout: 10000 }, async t => {
+  const artifacts = await mkdtemp(join(tmpdir(), 'just-following-package-'));
+  t.after(() => rm(artifacts, { recursive: true, force: true }));
+  await exec('npm', ['run', '--silent', 'build', '--', '--artifacts-dir', artifacts]);
   const [archive] = await readdir(artifacts);
   const { stdout } = await exec('unzip', ['-Z1', join(artifacts, archive)]);
-  assert.deepEqual(stdout.trim().split('\n'), ['manifest.json']);
+  const files = ['LICENSE', 'content.css', 'content.js', 'icon.svg', 'manifest.json', 'popup.css', 'popup.html', 'popup.js', 'settings.js'];
+  assert.deepEqual(stdout.trim().split('\n').sort(), files);
+  for (const file of files) {
+    const { stdout: packaged } = await exec('unzip', ['-p', join(artifacts, archive), file]);
+    assert.equal(packaged, await readFile(new URL(`../extension/${file}`, import.meta.url), 'utf8'), file);
+  }
 });

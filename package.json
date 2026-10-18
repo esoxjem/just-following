@@ -12,9 +12,8 @@
     "sign": "node --env-file-if-exists=.env node_modules/web-ext/bin/web-ext.js sign"
   },
   "webExt": {
-    "sourceDir": ".",
-    "artifactsDir": "artifacts",
-    "ignoreFiles": ["tests", "artifacts", "scripts", "store", "package*.json", "AGENTS.md", "README.md", ".gitignore", "docs", ".env", ".env.*", ".web-extension-id", ".amo-upload-uuid"]
+    "sourceDir": "extension",
+    "artifactsDir": "artifacts"
   },
   "devDependencies": {
     "jsdom": "^30.1.2",
