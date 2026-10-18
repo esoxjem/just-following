@@ -27,6 +27,9 @@ npm run build
 
 Package output: `artifacts/`
 
+On macOS, `npm test` also checks that Safari's Copy Bundle Resources phase includes
+every shared extension file and references the original source paths.
+
 ## Safari on iPhone / iPad
 
 Open `safari/Just Following.xcodeproj`, select the **Just Following** scheme and an

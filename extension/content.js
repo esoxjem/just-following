@@ -1,6 +1,15 @@
 (() => {
   'use strict';
 
+  // One Instagram media decision, shared with routing, playback, and CSS.
+  function markStandaloneVideo(article) {
+    if (!article) return false;
+    const standalone = !!article.querySelector('video') &&
+      !article.querySelector('[aria-label^="Go to slide "]');
+    article.toggleAttribute('data-jf-standalone-video', standalone);
+    return standalone;
+  }
+
   function start(win, navigate = href => win.location.replace(href)) {
     const doc = win.document;
     const allowedPosts = new Set();
@@ -13,6 +22,7 @@
     function sync() {
       if (!ready) return;
       for (const node of doc.querySelectorAll('[data-jf-hidden]')) node.removeAttribute('data-jf-hidden');
+      for (const article of doc.querySelectorAll('article')) markStandaloneVideo(article);
       doc.documentElement.setAttribute('data-jf-ready', '');
       const url = new URL(win.location.href);
       const following = url.pathname === '/' &&
@@ -27,7 +37,7 @@
       doc.documentElement.toggleAttribute('data-jf-block-reels', settings.blockReels);
       doc.documentElement.toggleAttribute('data-jf-hide-suggestions', settings.hideSuggestions);
       doc.documentElement.toggleAttribute('data-jf-hide-stories', settings.hideStories);
-      const blocked = (settings.hideStories && stories) || (settings.blockReels && /^\/p\/[^/]+\/?$/.test(url.pathname) && !allowedPost && !!doc.querySelector('article:has(video):not(:has([aria-label^="Go to slide "]))')) ||
+      const blocked = (settings.hideStories && stories) || (settings.blockReels && /^\/p\/[^/]+\/?$/.test(url.pathname) && !allowedPost && !!doc.querySelector('article[data-jf-standalone-video]')) ||
         (url.pathname === '/' && !following) ||
         (settings.blockReels && /^\/reels?(?:\/|$)/.test(url.pathname) && !allowedPost) ||
         (settings.blockReels && /^\/[^/]+\/reels?(?:\/|$)/.test(url.pathname) && !profilePage && !allowedPost) ||
@@ -121,7 +131,7 @@
       if (!ready) return;
       if (event.target.closest('[data-jf-hidden]') ||
         (!doc.documentElement.hasAttribute('data-jf-reels') && !win.location.pathname.startsWith('/stories/') &&
-          event.target.matches('article:not(:has([aria-label^="Go to slide "])) video'))) event.target.pause();
+          event.target.matches('video') && markStandaloneVideo(event.target.closest('article')))) event.target.pause();
     }, true);
     doc.addEventListener('click', event => {
       if (!ready) return;
@@ -158,7 +168,8 @@
       });
     } else sync();
     const observer = new win.MutationObserver(sync);
-    observer.observe(doc, { childList: true, subtree: true, characterData: true });
+    observer.observe(doc, { childList: true, subtree: true, characterData: true,
+      attributes: true, attributeFilter: ['aria-label'] });
   }
 
   if (typeof module === 'object' && module.exports) module.exports = { start };

@@ -489,6 +489,33 @@ test('a video permalink using /p/ returns to Following instead of a blank post',
   p.window.close();
 });
 
+test('the media presentation contract identifies only standalone videos', () => {
+  const p = page(`<main>
+    <article id="video"><video></video></article>
+    <article id="carousel"><video></video><button aria-label="Go to slide 1"></button></article>
+    <article id="photo"><img alt="Photo"></article>
+  </main>`, '/direct/inbox/');
+  for (const id of ['video', 'carousel', 'photo']) {
+    const article = p.document.getElementById(id);
+    assert.equal(article.hasAttribute('data-jf-standalone-video'), id === 'video', id);
+    assert.equal(p.window.getComputedStyle(article).display === 'none', id === 'video', id);
+  }
+});
+
+test('media classification follows relabeled carousel controls', async () => {
+  const p = page('<main><article><video></video><button aria-label="Next"></button></article></main>', '/direct/inbox/');
+  const article = p.document.querySelector('article');
+  const control = p.document.querySelector('button');
+  control.setAttribute('aria-label', 'Go to slide 1');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(article.hasAttribute('data-jf-standalone-video'), false);
+  assert.notEqual(p.window.getComputedStyle(article).display, 'none');
+  control.setAttribute('aria-label', 'Next');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(article.hasAttribute('data-jf-standalone-video'), true);
+  assert.equal(p.window.getComputedStyle(article).display, 'none');
+});
+
 test('profile Story highlights and native suggestion controls remain visible', () => {
   const p = page(`<main><header><img alt="Friend's profile picture"><button id="similar"><svg aria-label="Similar accounts"></svg></button></header>
     <div role="menu" id="highlights"><ul><li><button>Travel highlight</button></li></ul></div>
