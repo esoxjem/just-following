@@ -50,6 +50,22 @@
         navigate(`${url.origin}/?variant=following`);
       }
       if (!blocked) redirectFrom = undefined;
+      for (const link of doc.querySelectorAll('[data-jf-wordmark]')) {
+        if (following && link.textContent.replace(/\s/g, '') === 'BackFollowing' &&
+            link.querySelector('svg[aria-label="Back"]')) continue;
+        link.removeAttribute('data-jf-wordmark');
+        link.removeAttribute('aria-label');
+      }
+      if (following) {
+        for (const back of doc.querySelectorAll('a[href] svg[aria-label="Back"]')) {
+          const link = back.closest('a');
+          if (link.pathname !== '/' || link.hasAttribute('data-jf-wordmark') || link.hasAttribute('aria-label') ||
+            link.textContent.replace(/\s/g, '') !== 'BackFollowing') continue;
+          // CSS paints the wordmark without adding children to React's tree.
+          link.setAttribute('data-jf-wordmark', '');
+          link.setAttribute('aria-label', 'Instagram');
+        }
+      }
       if (!searchPage) searchFocused = false;
       if (searchPage) {
         const input = doc.querySelector('main input[aria-label="Search input"]');

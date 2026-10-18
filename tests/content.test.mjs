@@ -282,6 +282,46 @@ test('changing follow status keeps the profile’s Reel playback available', asy
   p.window.close();
 });
 
+test('the wordmark does not add children inside Instagram’s React-owned header link', () => {
+  const p = page('<h1><a href="/"><div><svg aria-label="Back"><title>Back</title></svg><span>Following</span></div></a></h1>');
+  const link = p.document.querySelector('h1 a');
+  assert.equal(link.children.length, 1);
+  assert.equal(link.firstElementChild.textContent, 'BackFollowing');
+});
+
+test('Following shows the Instagram wordmark in its native header link', () => {
+  const p = page(`<header><h1><a id="brand" href="/"><div id="native-heading"><span><svg aria-label="Back"><title>Back</title></svg></span><span>Following</span></div></a></h1><a id="notifications" href="/notifications/">Notifications</a></header><main><article>Native post</article></main>`);
+  const brand = p.document.getElementById('brand');
+  assert.equal(brand.getAttribute('aria-label'), 'Instagram');
+  assert.ok(brand.hasAttribute('data-jf-wordmark'));
+  assert.equal(p.window.getComputedStyle(p.document.getElementById('native-heading')).display, 'none');
+  assert.notEqual(p.window.getComputedStyle(p.document.getElementById('notifications')).display, 'none');
+  assert.equal(brand.href, 'https://www.instagram.com/?variant=following');
+  assert.deepEqual(p.redirects, []);
+  brand.dispatchEvent(new p.window.MouseEvent('click', { bubbles: true, cancelable: true }));
+  assert.deepEqual(p.redirects, ['https://www.instagram.com/?variant=following']);
+});
+
+test('the wordmark follows Instagram header rerenders and leaves other pages native', async () => {
+  const p = page('<header><h1 id="heading"></h1></header>');
+  const native = '<div><svg aria-label="Back"><title>Back</title></svg><span>Following</span></div>';
+  const heading = p.document.getElementById('heading');
+  heading.innerHTML = `<a href="/">${native}</a>`;
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const link = heading.querySelector('a');
+  assert.equal(link.getAttribute('aria-label'), 'Instagram');
+  link.innerHTML = native;
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(link.getAttribute('aria-label'), 'Instagram', 'React may replace only the link’s children');
+  assert.equal(p.window.getComputedStyle(link.firstElementChild).display, 'none');
+  p.window.history.pushState({}, '', '/friend/');
+  p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
+  assert.equal(link.getAttribute('aria-label'), null);
+  assert.equal(link.hasAttribute('data-jf-wordmark'), false);
+  assert.notEqual(p.window.getComputedStyle(link.firstElementChild).display, 'none');
+  assert.deepEqual(p.redirects, []);
+});
+
 test('Home links point at Following, including opening in a new tab', () => {
   const p = page(`<nav><a id="logo" href="/"><svg aria-label="Instagram"></svg></a>
     <a id="home" href="https://www.instagram.com/"><svg aria-label="Home"></svg></a>
