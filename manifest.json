@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Just Following",
   "version": "0.1.0",
-  "description": "A quieter Instagram: posts, Stories, and Reels from people you follow, without recommended feeds or Explore.",
+  "description": "Instagram’s Following feed by default. Hide Explore, the Reels feed, and labeled suggestions and ads. Keep posts and profiles.",
   "icons": {
     "16": "icon.svg",
     "32": "icon.svg",
