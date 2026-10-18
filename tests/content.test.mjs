@@ -302,6 +302,25 @@ test('Following shows the Instagram wordmark in its native header link', () => {
   assert.deepEqual(p.redirects, ['https://www.instagram.com/?variant=following']);
 });
 
+test('the outgoing feed keeps its wordmark until the notifications header renders', async () => {
+  const p = page('<header><h1><a href="/"><div><svg aria-label="Back"><title>Back</title></svg><span>Following</span></div></a></h1></header><main>Feed</main>');
+  const link = p.document.querySelector('h1 a');
+  p.window.history.pushState({}, '', '/notifications/');
+  p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
+  assert.equal(p.window.getComputedStyle(link.firstElementChild).display, 'none', 'The outgoing Following heading must stay concealed after the URL changes');
+  assert.equal(link.getAttribute('aria-label'), 'Instagram');
+  assert.ok(link.hasAttribute('data-jf-wordmark'));
+  p.document.querySelector('main').textContent = 'Loading notifications';
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(link.firstElementChild).display, 'none');
+  link.innerHTML = '<span>Notifications</span>';
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(link.hasAttribute('data-jf-wordmark'), false);
+  assert.equal(link.getAttribute('aria-label'), null);
+  assert.notEqual(p.window.getComputedStyle(link.firstElementChild).display, 'none');
+  assert.deepEqual(p.redirects, []);
+});
+
 test('the wordmark follows Instagram header rerenders and leaves other pages native', async () => {
   const p = page('<header><h1 id="heading"></h1></header>');
   const native = '<div><svg aria-label="Back"><title>Back</title></svg><span>Following</span></div>';
@@ -315,6 +334,7 @@ test('the wordmark follows Instagram header rerenders and leaves other pages nat
   assert.equal(link.getAttribute('aria-label'), 'Instagram', 'React may replace only the link’s children');
   assert.equal(p.window.getComputedStyle(link.firstElementChild).display, 'none');
   p.window.history.pushState({}, '', '/friend/');
+  link.innerHTML = '<span>friend</span>';
   p.window.dispatchEvent(new p.window.PopStateEvent('popstate'));
   assert.equal(link.getAttribute('aria-label'), null);
   assert.equal(link.hasAttribute('data-jf-wordmark'), false);

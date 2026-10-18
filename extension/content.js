@@ -51,7 +51,8 @@
       }
       if (!blocked) redirectFrom = undefined;
       for (const link of doc.querySelectorAll('[data-jf-wordmark]')) {
-        if (following && link.textContent.replace(/\s/g, '') === 'BackFollowing' &&
+        // The URL can change before Instagram removes the outgoing feed header.
+        if (link.textContent.replace(/\s/g, '') === 'BackFollowing' &&
             link.querySelector('svg[aria-label="Back"]')) continue;
         link.removeAttribute('data-jf-wordmark');
         link.removeAttribute('aria-label');

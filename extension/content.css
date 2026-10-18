@@ -6,17 +6,17 @@ html[data-jf-ready][data-jf-route="redirecting"] [role="main"] {
 
 /* Native Instagram wordmark from its public navigation (2026-10-18).
    CSS leaves React's children intact during hydration and later rerenders. */
-html[data-jf-ready][data-jf-route="following"] [data-jf-wordmark] > * {
+html[data-jf-ready] [data-jf-wordmark] > * {
   display: none !important;
 }
 
-html[data-jf-ready][data-jf-route="following"] [data-jf-wordmark] {
+html[data-jf-ready] [data-jf-wordmark] {
   display: inline-flex !important;
   align-items: center;
   color: rgb(var(--ig-primary-text, 0, 0, 0));
 }
 
-html[data-jf-ready][data-jf-route="following"] [data-jf-wordmark]::after {
+html[data-jf-ready] [data-jf-wordmark]::after {
   content: "";
   display: block;
   width: 103px;
