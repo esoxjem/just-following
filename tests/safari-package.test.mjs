@@ -11,6 +11,21 @@ const extensionRoot = fileURLToPath(new URL('../extension/', import.meta.url));
 const safariOnly = { skip: process.platform !== 'darwin' && 'Safari packaging requires macOS plutil' };
 const readProject = () => JSON.parse(execFileSync('plutil', ['-convert', 'json', '-o', '-', projectFile], { encoding: 'utf8' }));
 
+test('Safari targets use the esoxjem bundle identifiers in every configuration', safariOnly, () => {
+  const { objects } = readProject();
+  for (const [name, identifier] of [
+    ['Just Following', 'com.esoxjem.justfollowing'],
+    ['Just Following Extension', 'com.esoxjem.justfollowing.Extension'],
+  ]) {
+    const target = Object.values(objects).find(object => object.isa === 'PBXNativeTarget' && object.name === name);
+    assert.ok(target, `Missing target: ${name}`);
+    for (const id of objects[target.buildConfigurationList].buildConfigurations) {
+      const configuration = objects[id];
+      assert.equal(configuration.buildSettings.PRODUCT_BUNDLE_IDENTIFIER, identifier, `${name} ${configuration.name}`);
+    }
+  }
+});
+
 function assertSafariResourcesMatch(project) {
   const objects = project.objects;
   const paths = new Map();
@@ -28,6 +43,7 @@ function assertSafariResourcesMatch(project) {
   const bundled = resources.files.map(id => paths.get(objects[id].fileRef));
   const shared = readdirSync(extensionRoot, { recursive: true, withFileTypes: true })
     .filter(entry => entry.isFile() || entry.isSymbolicLink())
+    .filter(entry => entry.name !== '.amo-upload-uuid')
     .map(entry => resolve(entry.parentPath, entry.name));
   assert.deepEqual(bundled.sort(), shared.sort(), 'Safari extension resources must match the shared extension source files');
 }

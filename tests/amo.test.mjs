@@ -30,7 +30,7 @@ test('npm amo reads Just Following with Watchbox’s short-lived JWT authenticat
   assert.equal(requests.length, 1);
   const [request] = requests;
   assert.equal(request.method, 'GET');
-  assert.equal(request.url, '/api/v5/addons/addon/just-following%40local.just-following/');
+  assert.equal(request.url, '/api/v5/addons/addon/just-following%40esoxjem.com/');
   const [header, payload, signature] = request.authorization.slice('JWT '.length).split('.');
   const claims = JSON.parse(Buffer.from(payload, 'base64url'));
   assert.equal(claims.iss, env.WEB_EXT_API_KEY);

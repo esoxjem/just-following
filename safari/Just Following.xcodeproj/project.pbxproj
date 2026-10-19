@@ -459,7 +459,7 @@
 		60EAFE033084FF8F007DC8F0 /* Debug */ = {
 	buildSettings = {
 		"CODE_SIGN_STYLE" = Automatic;
-		"CURRENT_PROJECT_VERSION" = 1;
+		"CURRENT_PROJECT_VERSION" = 2;
 		"GENERATE_INFOPLIST_FILE" = YES;
 		"INFOPLIST_FILE" = "Just Following Extension/Info.plist";
 		"INFOPLIST_KEY_CFBundleDisplayName" = "Just Following Extension";
@@ -475,7 +475,7 @@
 			"-framework",
 			SafariServices,
 		);
-		"PRODUCT_BUNDLE_IDENTIFIER" = "com.arunsasidharan.justfollowing.Extension";
+		"PRODUCT_BUNDLE_IDENTIFIER" = "com.esoxjem.justfollowing.Extension";
 		"PRODUCT_NAME" = "$(TARGET_NAME)";
 		"SKIP_INSTALL" = YES;
 		"STRING_CATALOG_GENERATE_SYMBOLS" = YES;
@@ -491,7 +491,7 @@
 		60EAFE043084FF8F007DC8F0 /* Release */ = {
 	buildSettings = {
 		"CODE_SIGN_STYLE" = Automatic;
-		"CURRENT_PROJECT_VERSION" = 1;
+		"CURRENT_PROJECT_VERSION" = 2;
 		"GENERATE_INFOPLIST_FILE" = YES;
 		"INFOPLIST_FILE" = "Just Following Extension/Info.plist";
 		"INFOPLIST_KEY_CFBundleDisplayName" = "Just Following Extension";
@@ -507,7 +507,7 @@
 			"-framework",
 			SafariServices,
 		);
-		"PRODUCT_BUNDLE_IDENTIFIER" = "com.arunsasidharan.justfollowing.Extension";
+		"PRODUCT_BUNDLE_IDENTIFIER" = "com.esoxjem.justfollowing.Extension";
 		"PRODUCT_NAME" = "$(TARGET_NAME)";
 		"SKIP_INSTALL" = YES;
 		"STRING_CATALOG_GENERATE_SYMBOLS" = YES;
@@ -525,7 +525,7 @@
 		"ASSETCATALOG_COMPILER_APPICON_NAME" = AppIcon;
 		"ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME" = AccentColor;
 		"CODE_SIGN_STYLE" = Automatic;
-		"CURRENT_PROJECT_VERSION" = 1;
+		"CURRENT_PROJECT_VERSION" = 2;
 		"GENERATE_INFOPLIST_FILE" = YES;
 		"INFOPLIST_FILE" = "Just Following/Info.plist";
 		"INFOPLIST_KEY_CFBundleDisplayName" = "Just Following";
@@ -546,7 +546,7 @@
 			"-framework",
 			WebKit,
 		);
-		"PRODUCT_BUNDLE_IDENTIFIER" = "com.arunsasidharan.justfollowing";
+		"PRODUCT_BUNDLE_IDENTIFIER" = "com.esoxjem.justfollowing";
 		"PRODUCT_NAME" = "$(TARGET_NAME)";
 		"STRING_CATALOG_GENERATE_SYMBOLS" = YES;
 		"SWIFT_APPROACHABLE_CONCURRENCY" = YES;
@@ -564,7 +564,7 @@
 		"ASSETCATALOG_COMPILER_APPICON_NAME" = AppIcon;
 		"ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME" = AccentColor;
 		"CODE_SIGN_STYLE" = Automatic;
-		"CURRENT_PROJECT_VERSION" = 1;
+		"CURRENT_PROJECT_VERSION" = 2;
 		"GENERATE_INFOPLIST_FILE" = YES;
 		"INFOPLIST_FILE" = "Just Following/Info.plist";
 		"INFOPLIST_KEY_CFBundleDisplayName" = "Just Following";
@@ -585,7 +585,7 @@
 			"-framework",
 			WebKit,
 		);
-		"PRODUCT_BUNDLE_IDENTIFIER" = "com.arunsasidharan.justfollowing";
+		"PRODUCT_BUNDLE_IDENTIFIER" = "com.esoxjem.justfollowing";
 		"PRODUCT_NAME" = "$(TARGET_NAME)";
 		"STRING_CATALOG_GENERATE_SYMBOLS" = YES;
 		"SWIFT_APPROACHABLE_CONCURRENCY" = YES;

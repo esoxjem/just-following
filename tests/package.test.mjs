@@ -9,6 +9,7 @@ test('Firefox package runs only on Instagram with no data collection', () => {
   const manifest = JSON.parse(readFileSync(path, 'utf8'));
   assert.equal(manifest.name, 'Just Following');
   assert.equal(manifest.manifest_version, 3);
+  assert.equal(manifest.browser_specific_settings.gecko.id, 'just-following@esoxjem.com');
   assert.deepEqual(manifest.browser_specific_settings.gecko.data_collection_permissions.required, ['none']);
   assert.deepEqual(manifest.content_scripts[0].matches, ['https://www.instagram.com/*', 'https://instagram.com/*']);
   assert.equal(manifest.content_scripts[0].run_at, 'document_start');
@@ -19,6 +20,12 @@ test('Firefox package runs only on Instagram with no data collection', () => {
 test('the declared Firefox minimum supports built-in no-data consent', () => {
   const manifest = JSON.parse(readFileSync(new URL('../extension/manifest.json', import.meta.url), 'utf8'));
   assert.ok(Number.parseInt(manifest.browser_specific_settings.gecko.strict_min_version, 10) >= 142);
+});
+
+test('the shared manifest description fits Safari distribution requirements', () => {
+  const manifest = JSON.parse(readFileSync(new URL('../extension/manifest.json', import.meta.url), 'utf8'));
+  assert.equal(typeof manifest.description, 'string');
+  assert.ok(manifest.description.length > 0 && manifest.description.length <= 112);
 });
 
 test('Firefox can load a self-contained icon at each extension display size', () => {
