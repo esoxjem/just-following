@@ -187,7 +187,6 @@
     const api = globalThis.browser?.storage;
     let settings = globalThis.JFSettings.normalize();
     let ready = !api;
-    const changedBeforeLoad = {};
     function sync() {
       if (!ready) return;
       for (const node of doc.querySelectorAll('[data-jf-hidden]')) node.removeAttribute('data-jf-hidden');
@@ -250,24 +249,11 @@
     }, true);
     win.addEventListener('popstate', sync);
     if (api) {
-      api.onChanged.addListener((changes, area) => {
-        if (area !== 'local') return;
-        const patch = Object.fromEntries(Object.keys(globalThis.JFSettings.defaults)
-          .filter(key => Object.hasOwn(changes, key))
-          .map(key => [key, changes[key].newValue ?? globalThis.JFSettings.defaults[key]]));
-        if (!ready) Object.assign(changedBeforeLoad, patch);
-        settings = globalThis.JFSettings.normalize({ ...settings, ...patch });
-        sync();
-      });
-      api.local.get().then(saved => {
-        settings = globalThis.JFSettings.normalize({ ...saved, ...changedBeforeLoad });
+      globalThis.JFSettings.watch(api, next => {
+        settings = next;
         ready = true;
         sync();
-      }).catch(error => {
-        console.error('Just Following: could not load preferences', error);
-        ready = true;
-        sync();
-      });
+      }).catch(error => console.error('Just Following: could not load preferences', error));
     } else sync();
     const observer = new win.MutationObserver(sync);
     observer.observe(doc, { childList: true, subtree: true, characterData: true,

@@ -74,6 +74,17 @@ test('popup stays in sync when another popup changes local preferences', async (
   assert.equal(p.writes.length, 0);
 });
 
+test('a preference changed elsewhere while the popup loads wins over the stale read', async () => {
+  let finish;
+  const p = await popup(new Promise(resolve => { finish = resolve; }));
+  // Storage events reach only listeners registered before the change.
+  p.change?.({ hideStories: { newValue: true } }, 'local');
+  finish({ hideStories: false });
+  await tick();
+  assert.equal(p.doc.querySelector('[name="hideStories"]').checked, true);
+  assert.equal(p.doc.querySelector('#options').disabled, false);
+});
+
 test('failed saves restore the persisted switch and show a retry message', async () => {
   const p = await popup({}, async () => { throw new Error('Storage unavailable'); });
   p.doc.querySelector('[name="hideStories"]').click();

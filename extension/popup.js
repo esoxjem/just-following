@@ -1,12 +1,13 @@
 (async () => {
   'use strict';
-  const { defaults, normalize } = globalThis.JFSettings;
+  const { defaults, normalize, watch } = globalThis.JFSettings;
   const inputs = [...document.querySelectorAll('input[name]')];
   const options = document.querySelector('#options');
   const reset = document.querySelector('#reset');
   const status = document.querySelector('#status');
   let settings;
   let saving = false;
+  let loaded = false;
   function render() {
     for (const input of inputs) { input.checked = settings[input.name]; input.disabled = saving; }
     options.disabled = false;
@@ -29,15 +30,11 @@
   reset.addEventListener('click', () => save({ ...defaults }));
   for (const input of inputs) input.addEventListener('change', () => save({ [input.name]: input.checked }));
   try {
-    settings = normalize(await browser.storage.local.get());
-    browser.storage.onChanged.addListener((changes, area) => {
-      if (area !== 'local') return;
-      for (const key of Object.keys(defaults)) {
-        if (Object.hasOwn(changes, key)) settings[key] = changes[key].newValue;
-      }
-      settings = normalize(settings);
-      render();
+    await watch(browser.storage, next => {
+      settings = next;
+      if (loaded) render();
     });
+    loaded = true;
     render();
     status.textContent = 'Settings saved automatically. Only on this browser.';
   } catch {
