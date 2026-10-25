@@ -148,6 +148,25 @@ test('mobile navigation collapses the hidden Reels slot and restores it with the
   }
 });
 
+test('a link Instagram retargets to a Reel is hidden off Following', async () => {
+  const p = page('<main><a id="link" href="/kodak/">Kodak</a></main>', '/explore/search/', {});
+  await new Promise(resolve => setTimeout(resolve, 0));
+  const link = p.document.getElementById('link');
+  assert.notEqual(p.window.getComputedStyle(link).display, 'none');
+  link.setAttribute('href', '/reel/ABC/');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(link).display, 'none');
+});
+
+test('content.css styles only Just Following’s page attributes and landmarks', () => {
+  // content.js translates Instagram's URLs, labels, and layout into data-jf-* attributes.
+  const selectors = readFileSync(cssPath, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{[^}]*\}/g, ',');
+  assert.ok(!selectors.includes(':has('), 'Instagram layout is recognized in content.js');
+  const foreign = [...selectors.matchAll(/\[[^\]]*\]/g)].map(([attribute]) => attribute)
+    .filter(attribute => !attribute.startsWith('[data-jf-') && attribute !== '[role="main"]');
+  assert.deepEqual(foreign, []);
+});
+
 test('Following keeps Stories, Reel posts, and photo carousels', () => {
   const p = page(`<main><div aria-label="Stories" id="stories"><div role="menu"><button>Friend's story</button></div></div>
     <article id="video"><video></video><a id="reel" href="/friend/reel/ABC/"><svg aria-label="Clip"></svg></a><button>Like</button></article>
@@ -179,7 +198,7 @@ for (const path of ['/kodak/', '/kodak/reels/', '/kodak/reposts/', '/kodak/tagge
         assert.notEqual(p.window.getComputedStyle(node).visibility, 'hidden', id);
       }
     }
-    assert.equal(p.document.querySelectorAll('[data-jf-hidden]').length, 0);
+    assert.equal(p.document.querySelectorAll('main [data-jf-hidden]').length, 0);
     p.window.close();
   });
 }

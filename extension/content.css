@@ -25,33 +25,12 @@ html[data-jf-ready] [data-jf-wordmark]::after {
   mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20aria-label%3D%22Instagram%22%20fill%3D%22currentColor%22%20height%3D%2226%22%20role%3D%22img%22%20viewBox%3D%220%200%20600%20150%22%20width%3D%22103%22%3E%3Ctitle%3EInstagram%3C%2Ftitle%3E%20%3Cpolygon%20points%3D%220%20106.31%2015.08%20106.31%2015.08%208.46%200%2011.82%200%20106.31%22%2F%3E%20%3Cpath%20d%3D%22M116.77%2C35.06h0c-5.3%2C19.69-12.18%2C38.75-20.69%2C56.21-1.6%2C3.2-2.88%2C4.33-4.65%2C4.33-1.6%2C0-2.73-.96-2.73-3.36v-28.03c0-17.78-9.14-29.95-26.14-29.95-8.83%2C0-16.2%2C4.16-20.21%2C11.69v-10.25h-14.28v70.62h14.28v-40.84c0-11.05%2C7.06-19.37%2C16.84-19.37%2C9.13%2C0%2C15.23%2C6.57%2C15.23%2C19.22v27.23c0%2C10.09%2C5.61%2C15.05%2C15.72%2C15.06%2C8.34%2C0%2C13.47-3.53%2C17.48-11.69%2C6.74-13.94%2C12.83-29.63%2C17.32-45.33%2C8.18%2C14.73%2C21.97%2C21.94%2C21.97%2C33.47%2C0%2C5.93-4.01%2C11.86-13.63%2C11.86-5.3%2C0-10.11-2.4-13.31-5.13l-5.77%2C11.53c4.01%2C3.04%2C11.55%2C5.6%2C19.09%2C5.6%2C17.32%2C0%2C27.43-10.73%2C27.43-24.19%2C0-19.06-23.42-29.47-28.23-48.68h-15.72Z%22%2F%3E%20%3Cpath%20d%3D%22M201.46%2C92.08c-2.72%2C1.76-5.12%2C2.56-7.85%2C2.56h0c-4.97-.01-7.7-3.05-7.7-8.34v-37.79h16.52v-12.81h-16.52V14.72l-14.28%2C3.04v17.94h-14.59v12.81h14.59v40.2c0%2C10.88%2C7.22%2C18.58%2C19.89%2C18.58%2C6.73%2C0%2C11.55-1.92%2C15.55-4.48h0s0%2C0%2C0%2C0h0s0%2C0%2C0%2C0l-5.6-10.71Z%22%2F%3E%20%3Cpath%20d%3D%22M575.46%2C34.23c-9.95%2C0-17.98%2C4.32-21.82%2C12.01-3.85-7.52-11.22-12.01-21.33-12.01-8.18%2C0-15.07%2C3.69-18.6%2C10.26v-8.81h-14.28v70.63h14.28v-44.51c0-8.97%2C6.41-15.7%2C15.23-15.7%2C8.02%2C0%2C13.63%2C5.44%2C13.63%2C16.01v44.2h14.28v-44.52c0-8.97%2C6.1-15.7%2C15.08-15.7%2C8.02%2C0%2C13.79%2C5.44%2C13.79%2C16.01v44.2h14.28v-45.49c0-15.86-8.82-26.58-24.54-26.58Z%22%2F%3E%20%3Cpath%20d%3D%22M263.52%2C43.37c-5.93-6.09-14.12-9.29-23.26-9.29-19.09%2C0-33.2%2C16.01-33.2%2C36.83s14.12%2C36.99%2C33.2%2C36.99c9.46%2C0%2C17.49-3.85%2C23.26-10.09v8.49h14.28V35.69h-14.28v7.69ZM242.35%2C95.42c-11.71%2C0-21.17-9.61-21.17-24.5s9.62-24.34%2C21.17-24.34%2C21.17%2C9.45%2C21.17%2C24.34-9.46%2C24.5-21.17%2C24.5Z%22%2F%3E%20%3Cpath%20d%3D%22M472.66%2C43.37h-.01c-5.93-6.09-14.12-9.29-23.26-9.29-19.09%2C0-33.2%2C16.01-33.2%2C36.83%2C0%2C6.39%2C1.32%2C12.32%2C3.68%2C17.47-4.5%2C4.85-9.42%2C7.04-14.74%2C7.04-8.19%2C0-13.47-4.97-13.47-15.05s5.61-21.95%2C18.12-32.36l-6.41-12.33h-36.72v12.81h25.98c-8.98%2C9.93-14.76%2C22.42-14.76%2C33.79%2C0%2C16.5%2C10.91%2C25.63%2C25.82%2C25.63%2C8.6%2C0%2C16.92-3.83%2C22.41-10.14%2C5.88%2C6.33%2C14%2C10.14%2C23.3%2C10.14%2C9.3%2C0%2C17.49-3.85%2C23.26-10.09v8.49h14.28V35.69h-14.28v7.69ZM451.49%2C95.42c-11.71%2C0-21.17-9.61-21.17-24.5s9.62-24.34%2C21.17-24.34c11.55%2C0%2C21.17%2C9.45%2C21.17%2C24.34s-9.46%2C24.5-21.17%2C24.5Z%22%2F%3E%20%3Cpath%20d%3D%22M344.18%2C43.36c-5.93-6.09-13.96-9.29-22.93-9.29-18.92%2C0-33.52%2C15.53-33.52%2C36.99%2C0%2C19.06%2C12.04%2C33.79%2C28.23%2C36.36-7.38%2C4.32-10.75%2C8.98-10.75%2C16.02%2C0%2C10.09%2C8.34%2C18.1%2C23.26%2C18.1%2C19.72%2C0%2C29.99-13.46%2C29.99-30.91V35.67h-14.28v7.69ZM344.18%2C112.08c0%2C11.69-6.9%2C17.13-14.92%2C17.13-7.22%2C0-10.59-4.17-10.59-8.49s2.73-9.77%2C14.76-15.21c4.17-1.92%2C7.87-4.49%2C10.75-7.69v14.26ZM323.02%2C95.42c-11.7%2C0-21.17-9.61-21.17-24.5%2C0-14.89%2C9.62-24.34%2C21.17-24.34%2C11.55%2C0%2C21.17%2C9.45%2C21.17%2C24.34s-9.46%2C24.5-21.17%2C24.5Z%22%2F%3E%20%3C%2Fsvg%3E") center / contain no-repeat;
 }
 
-/* Semantic URLs survive Instagram's changing generated class names. */
-html[data-jf-ready][data-jf-block-reels] a[href="/reels/"],
-html[data-jf-ready][data-jf-block-reels] a[href="https://www.instagram.com/reels/"],
-html[data-jf-ready]:not([data-jf-reels]) a[href^="/reel/"],
-html[data-jf-ready]:not([data-jf-reels]) a[href^="/reels/"],
-html[data-jf-ready]:not([data-jf-reels]) a[href^="https://www.instagram.com/reel/"],
-html[data-jf-ready]:not([data-jf-reels]) a[href^="https://www.instagram.com/reels/"] {
-  display: none !important;
-}
-
-/* Collapse the mobile Reels item's empty slot in Instagram's space-evenly bar. */
-html[data-jf-ready][data-jf-block-reels] div:has(> span:only-child > div:only-child > a:only-child:is([href="/reels/"], [href="https://www.instagram.com/reels/"])) {
-  display: none !important;
-}
-
 html[data-jf-ready]:not([data-jf-reels]):not([data-jf-route="stories"]) article[data-jf-standalone-video] {
   display: none !important;
 }
 
-html[data-jf-ready]:not([data-jf-reels]) a:has(svg[aria-label="Reel"]),
-html[data-jf-ready]:not([data-jf-reels]) a:has(svg[aria-label="Reels"]),
-html[data-jf-ready]:not([data-jf-reels]) a[href$="/reels/"] {
-  display: none !important;
-}
-
-html[data-jf-ready] [data-jf-hidden]:not(article),
-html[data-jf-ready][data-jf-route="search"] main a[href^="/p/"] {
+/* content.js marks Instagram content and entry points to hide. */
+html[data-jf-ready] [data-jf-hidden]:not(article) {
   display: none !important;
 }
 
@@ -64,29 +43,4 @@ html[data-jf-ready] article[data-jf-hidden] {
   padding: 0 !important;
   overflow: hidden !important;
   visibility: hidden !important;
-}
-
-/* Explore loads beside the native search widget, before any post links exist. */
-html[data-jf-ready][data-jf-route="search"] main > div > div:not(:has(input, [role="search"])) [role="progressbar"] {
-  display: none !important;
-}
-
-html[data-jf-ready][data-jf-hide-suggestions]:not([data-jf-route="following"]):not([data-jf-route="profile"]) button:has(svg[aria-label="Similar accounts"]),
-html[data-jf-ready][data-jf-hide-suggestions]:not([data-jf-route="following"]):not([data-jf-route="profile"]) [role="button"]:has(svg[aria-label="Similar accounts"]) {
-  display: none !important;
-}
-
-html[data-jf-ready]:not([data-jf-reels]) main a[href*="/reel/"],
-html[data-jf-ready]:not([data-jf-reels]) a:has(svg[aria-label="Clip"]) {
-  display: none !important;
-}
-
-html[data-jf-ready][data-jf-hide-stories] [aria-label="Stories"],
-html[data-jf-ready][data-jf-hide-stories] [role="presentation"]:has(ul [role="button"][aria-label^="Story by "]),
-html[data-jf-ready][data-jf-hide-stories] ul:has([role="button"][aria-label^="Story by "]),
-html[data-jf-ready][data-jf-hide-stories] [role="menu"]:has(a[href^="/stories/"]),
-html[data-jf-ready][data-jf-hide-stories] [role="menu"]:has(a[href^="https://www.instagram.com/stories/"]),
-html[data-jf-ready][data-jf-hide-stories] a[href^="/stories/"],
-html[data-jf-ready][data-jf-hide-stories] a[href^="https://www.instagram.com/stories/"] {
-  display: none !important;
 }
