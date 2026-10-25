@@ -69,6 +69,116 @@
     }
   }
 
+  function classify(url, settings, allowedPosts, doc) {
+    const path = url.pathname;
+    const following = path === '/' &&
+      url.searchParams.getAll('variant').length === 1 &&
+      url.searchParams.get('variant') === 'following';
+    const stories = path.startsWith('/stories/');
+    const profile = path.match(/^\/([^/]+)\/(?:(?:reels|reposts|tagged)\/)?$/)?.[1].toLowerCase();
+    const profilePage = !!profile && !['accounts', 'direct', 'explore', 'reel', 'reels', 'stories'].includes(profile);
+    const post = postId(path);
+    const allowedPost = !!post && allowedPosts.has(post);
+    const reelsAllowed = !settings.blockReels || following || profilePage || allowedPost;
+    const searchPage = settings.hideExplore && ['/explore/', '/explore/search/'].includes(path);
+    const blocked = (settings.hideStories && stories) || (settings.blockReels && /^\/p\/[^/]+\/?$/.test(path) && !allowedPost && !!doc.querySelector('article[data-jf-standalone-video]')) ||
+      (path === '/' && !following) ||
+      (settings.blockReels && /^\/reels?(?:\/|$)/.test(path) && !allowedPost) ||
+      (settings.blockReels && /^\/[^/]+\/reels?(?:\/|$)/.test(path) && !profilePage && !allowedPost) ||
+      (settings.hideExplore && path.startsWith('/explore/') && !searchPage);
+    const name = blocked ? 'redirecting'
+      : following ? 'following' : profilePage ? 'profile' : stories ? 'stories' : searchPage ? 'search' : 'other';
+    return { name, following, profilePage, reelsAllowed, searchPage, blocked };
+  }
+
+  function updateWordmark(doc, following) {
+    for (const link of doc.querySelectorAll('[data-jf-wordmark]')) {
+      // The URL can change before Instagram removes the outgoing feed header.
+      if (link.textContent.replace(/\s/g, '') === 'BackFollowing' &&
+          link.querySelector('svg[aria-label="Back"]')) continue;
+      link.removeAttribute('data-jf-wordmark');
+      link.removeAttribute('aria-label');
+    }
+    for (const back of following ? doc.querySelectorAll('a[href] svg[aria-label="Back"]') : []) {
+      const link = back.closest('a');
+      if (link.pathname !== '/' || link.hasAttribute('data-jf-wordmark') || link.hasAttribute('aria-label') ||
+        link.textContent.replace(/\s/g, '') !== 'BackFollowing') continue;
+      // CSS paints the wordmark without adding children to React's tree.
+      link.setAttribute('data-jf-wordmark', '');
+      link.setAttribute('aria-label', 'Instagram');
+    }
+  }
+
+  function hideExplorePosts(doc) {
+    for (const tile of doc.querySelectorAll('main a[href^="/p/"]')) {
+      let branch = tile;
+      while (branch.parentElement && !branch.parentElement.matches('main') && !branch.parentElement.querySelector('input, [role="search"]')) branch = branch.parentElement;
+      hide(branch);
+    }
+  }
+
+  function hideSuggestions(doc, origin, { following, profilePage }) {
+    if (following) {
+      for (const article of doc.querySelectorAll('main article')) {
+        const headers = [...article.querySelectorAll('header')];
+        // Instagram also uses divs for metadata. The first ancestor shared by
+        // the options menu and author links stays above media and captions.
+        for (const menu of article.querySelectorAll('[aria-label="More options"]')) {
+          let header = menu.parentElement;
+          while (header && header !== article && !header.querySelector('a[href]')) header = header.parentElement;
+          if (header && header !== article && !header.querySelector('video, [aria-label="Like"], [aria-label="Comment"]')) headers.push(header);
+        }
+        if (headers.some(header => [...header.querySelectorAll('span, div, a')]
+          .some(marker => ['Suggested for you', 'Sponsored', 'Paid partnership'].includes(marker.textContent.trim())))) {
+          hide(article);
+          for (const video of article.querySelectorAll('video')) if (!video.paused) video.pause();
+        }
+      }
+      for (const link of doc.querySelectorAll(`main a[href="/explore/people/"], main a[href="${origin}/explore/people/"]`)) {
+        if (link.closest('article')) continue;
+        let sidebar = link.parentElement;
+        while (sidebar && !sidebar.matches('main') &&
+          !sidebar.querySelector('article, input, nav, [role="search"], [role="tablist"], a[href*="/p/"], a[href*="/reel/"]')) {
+          if (sidebar.querySelector('button, [role="button"]')) {
+            hide(sidebar);
+            break;
+          }
+          sidebar = sidebar.parentElement;
+        }
+      }
+    }
+    for (const marker of following || profilePage ? [] : doc.querySelectorAll('main h4')) {
+      if (!['Suggested for you', 'Suggested posts', 'Suggested reels', 'Discover people', 'Sponsored'].includes(marker.textContent.trim())) continue;
+      const article = marker.closest('article');
+      if (article && !marker.closest('header')) continue;
+      let branch = article || marker.closest('aside') || marker;
+      if (!article) {
+        while (branch.parentElement && !branch.parentElement.matches('main, header') && !branch.parentElement.querySelector('article, input, nav, [role="search"], [role="tablist"], a[href*="/p/"], a[href*="/reel/"]')) branch = branch.parentElement;
+      }
+      hide(branch);
+    }
+  }
+
+  function rememberAllowedPosts(doc, origin, allowedPosts) {
+    for (const link of doc.querySelectorAll('main a[href]')) {
+      if (link.closest('[data-jf-hidden]')) continue;
+      const id = postId(link.pathname);
+      if (link.origin === origin && id) allowedPosts.add(id);
+    }
+  }
+
+  function rewriteHomeLinks(doc, url) {
+    for (const link of doc.querySelectorAll('a[href]')) {
+      const href = link.getAttribute('href');
+      if (href.includes('#')) continue;
+      let target;
+      try { target = new URL(href, url); } catch { continue; }
+      if (target.origin === url.origin && target.pathname === '/' && target.searchParams.get('variant') !== 'following') {
+        link.setAttribute('href', `${url.origin}/?variant=following`);
+      }
+    }
+  }
+
   function start(win, navigate = href => win.location.replace(href)) {
     const doc = win.document;
     const allowedPosts = new Set();
@@ -84,119 +194,32 @@
       for (const article of doc.querySelectorAll('article')) markStandaloneVideo(article);
       doc.documentElement.setAttribute('data-jf-ready', '');
       const url = new URL(win.location.href);
-      const following = url.pathname === '/' &&
-        url.searchParams.getAll('variant').length === 1 &&
-        url.searchParams.get('variant') === 'following';
-      const stories = url.pathname.startsWith('/stories/');
-      const profile = url.pathname.match(/^\/([^/]+)\/(?:(?:reels|reposts|tagged)\/)?$/)?.[1].toLowerCase();
-      const profilePage = !!profile && !['accounts', 'direct', 'explore', 'reel', 'reels', 'stories'].includes(profile);
-      const post = postId(url.pathname);
-      const allowedPost = !!post && allowedPosts.has(post);
-      const reelsAllowed = !settings.blockReels || following || profilePage || allowedPost;
-      doc.documentElement.toggleAttribute('data-jf-reels', reelsAllowed);
-      const blocked = (settings.hideStories && stories) || (settings.blockReels && /^\/p\/[^/]+\/?$/.test(url.pathname) && !allowedPost && !!doc.querySelector('article[data-jf-standalone-video]')) ||
-        (url.pathname === '/' && !following) ||
-        (settings.blockReels && /^\/reels?(?:\/|$)/.test(url.pathname) && !allowedPost) ||
-        (settings.blockReels && /^\/[^/]+\/reels?(?:\/|$)/.test(url.pathname) && !profilePage && !allowedPost) ||
-        (settings.hideExplore && url.pathname.startsWith('/explore/') && !['/explore/', '/explore/search/'].includes(url.pathname));
-      const searchPage = settings.hideExplore && ['/explore/', '/explore/search/'].includes(url.pathname);
-      const route = blocked ? 'redirecting'
-        : following ? 'following' : profilePage ? 'profile' : stories ? 'stories' : searchPage ? 'search' : 'other';
-      doc.documentElement.dataset.jfRoute = route;
+      const route = classify(url, settings, allowedPosts, doc);
+      doc.documentElement.toggleAttribute('data-jf-reels', route.reelsAllowed);
+      doc.documentElement.dataset.jfRoute = route.name;
       // Story playback is native; elsewhere a standalone video is the Reels feed in disguise.
-      doc.documentElement.toggleAttribute('data-jf-hide-standalone-videos', !reelsAllowed && route !== 'stories');
-      if (blocked && redirectFrom !== url.href) {
+      doc.documentElement.toggleAttribute('data-jf-hide-standalone-videos', !route.reelsAllowed && route.name !== 'stories');
+      if (route.blocked && redirectFrom !== url.href) {
         redirectFrom = url.href;
         navigate(`${url.origin}/?variant=following`);
       }
-      if (!blocked) redirectFrom = undefined;
-      for (const link of doc.querySelectorAll('[data-jf-wordmark]')) {
-        // The URL can change before Instagram removes the outgoing feed header.
-        if (link.textContent.replace(/\s/g, '') === 'BackFollowing' &&
-            link.querySelector('svg[aria-label="Back"]')) continue;
-        link.removeAttribute('data-jf-wordmark');
-        link.removeAttribute('aria-label');
-      }
-      if (following) {
-        for (const back of doc.querySelectorAll('a[href] svg[aria-label="Back"]')) {
-          const link = back.closest('a');
-          if (link.pathname !== '/' || link.hasAttribute('data-jf-wordmark') || link.hasAttribute('aria-label') ||
-            link.textContent.replace(/\s/g, '') !== 'BackFollowing') continue;
-          // CSS paints the wordmark without adding children to React's tree.
-          link.setAttribute('data-jf-wordmark', '');
-          link.setAttribute('aria-label', 'Instagram');
-        }
-      }
-      if (!searchPage) searchFocused = false;
-      if (searchPage) {
+      if (!route.blocked) redirectFrom = undefined;
+      updateWordmark(doc, route.following);
+      if (!route.searchPage) searchFocused = false;
+      if (route.searchPage) {
         const input = doc.querySelector('main input[aria-label="Search input"]');
         if (input && !searchFocused) {
           searchFocused = true;
           input.focus();
         }
-        for (const tile of doc.querySelectorAll('main a[href^="/p/"]')) {
-          let branch = tile;
-          while (branch.parentElement && !branch.parentElement.matches('main') && !branch.parentElement.querySelector('input, [role="search"]')) branch = branch.parentElement;
-          branch.setAttribute('data-jf-hidden', '');
-        }
+        hideExplorePosts(doc);
       }
-      if (following && settings.hideSuggestions) {
-        for (const article of doc.querySelectorAll('main article')) {
-          const headers = [...article.querySelectorAll('header')];
-          // Instagram also uses divs for metadata. The first ancestor shared by
-          // the options menu and author links stays above media and captions.
-          for (const menu of article.querySelectorAll('[aria-label="More options"]')) {
-            let header = menu.parentElement;
-            while (header && header !== article && !header.querySelector('a[href]')) header = header.parentElement;
-            if (header && header !== article && !header.querySelector('video, [aria-label="Like"], [aria-label="Comment"]')) headers.push(header);
-          }
-          if (headers.some(header => [...header.querySelectorAll('span, div, a')]
-            .some(marker => ['Suggested for you', 'Sponsored', 'Paid partnership'].includes(marker.textContent.trim())))) {
-            article.setAttribute('data-jf-hidden', '');
-            for (const video of article.querySelectorAll('video')) if (!video.paused) video.pause();
-          }
-        }
-        for (const link of doc.querySelectorAll(`main a[href="/explore/people/"], main a[href="${url.origin}/explore/people/"]`)) {
-          if (link.closest('article')) continue;
-          let sidebar = link.parentElement;
-          while (sidebar && !sidebar.matches('main') &&
-            !sidebar.querySelector('article, input, nav, [role="search"], [role="tablist"], a[href*="/p/"], a[href*="/reel/"]')) {
-            if (sidebar.querySelector('button, [role="button"]')) {
-              sidebar.setAttribute('data-jf-hidden', '');
-              break;
-            }
-            sidebar = sidebar.parentElement;
-          }
-        }
-      }
-      for (const marker of !settings.hideSuggestions || following || profilePage ? [] : doc.querySelectorAll('main h4')) {
-        if (!['Suggested for you', 'Suggested posts', 'Suggested reels', 'Discover people', 'Sponsored'].includes(marker.textContent.trim())) continue;
-        const article = marker.closest('article');
-        if (article && !marker.closest('header')) continue;
-        let branch = article || marker.closest('aside') || marker;
-        if (!article) {
-          while (branch.parentElement && !branch.parentElement.matches('main, header') && !branch.parentElement.querySelector('article, input, nav, [role="search"], [role="tablist"], a[href*="/p/"], a[href*="/reel/"]')) branch = branch.parentElement;
-        }
-        branch.setAttribute('data-jf-hidden', '');
-      }
-      if (following || profilePage) {
-        for (const link of doc.querySelectorAll('main a[href]')) {
-          if (link.closest('[data-jf-hidden]')) continue;
-          const id = postId(link.pathname);
-          if (link.origin === url.origin && id) allowedPosts.add(id);
-        }
-      }
-      hideEntryPoints(doc, url.origin, { blockReels: settings.blockReels, reelsAllowed, searchPage,
-        hideSimilar: settings.hideSuggestions && !following && !profilePage, hideStories: settings.hideStories });
-      for (const link of doc.querySelectorAll('a[href]')) {
-        const href = link.getAttribute('href');
-        if (href.includes('#')) continue;
-        let target;
-        try { target = new URL(href, url); } catch { continue; }
-        if (target.origin === url.origin && target.pathname === '/' && target.searchParams.get('variant') !== 'following') {
-          link.setAttribute('href', `${url.origin}/?variant=following`);
-        }
-      }
+      if (settings.hideSuggestions) hideSuggestions(doc, url.origin, route);
+      // After hiding: a suggested post must not authorize opening its Reel.
+      if (route.following || route.profilePage) rememberAllowedPosts(doc, url.origin, allowedPosts);
+      hideEntryPoints(doc, url.origin, { blockReels: settings.blockReels, reelsAllowed: route.reelsAllowed, searchPage: route.searchPage,
+        hideSimilar: settings.hideSuggestions && !route.following && !route.profilePage, hideStories: settings.hideStories });
+      rewriteHomeLinks(doc, url);
     }
     // Instagram changes history without a full page load. The timer only checks the URL.
     let lastHref = win.location.href;
