@@ -84,6 +84,15 @@ Instagram cookie, WebGL, and network messages; no extension-source errors were
 observed. One malformed manual inspection query produced a console syntax error
 and was corrected; it was not an extension error.
 
+Zen validation (2026-10-25, 1.23.4b): tested the current source with the older
+installed copy temporarily disabled. Home and direct Reels routes return to
+Following; the dedicated Reels entry is hidden in desktop and 390px mobile
+navigation. Explore filtering preserves account search; suggested accounts and
+profile highlights respond to settings without a reload. Profile Reels play
+natively. No extension-source console errors observed. Sponsored feed posts and
+the Stories rail were not supplied, so those cases remain unverified live. Test
+preferences and the original installed extension were restored afterward.
+
 ## License
 
 [MIT](LICENSE). Copyright (c) 2026 Arun Sasidharan.
