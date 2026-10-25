@@ -81,6 +81,17 @@ for (const path of ['/stories/person/123/', '/stories/highlights/123/']) {
   });
 }
 
+test('a hidden Story video cannot play while its redirect is pending', async () => {
+  const p = page('<main><article><video></video></article></main>', '/stories/friend/123/', { hideStories: true });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(p.window.getComputedStyle(p.document.querySelector('article')).display, 'none');
+  let pauses = 0;
+  const video = p.document.querySelector('video');
+  video.pause = () => { pauses += 1; };
+  video.dispatchEvent(new p.window.Event('play'));
+  assert.equal(pauses, 1);
+});
+
 test('the outgoing recommended feed is invisible while Following loads', () => {
   const p = page('<main><article>Recommended</article></main>', '/');
   assert.equal(p.window.getComputedStyle(p.document.querySelector('main')).visibility, 'hidden');

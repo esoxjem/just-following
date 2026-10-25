@@ -100,8 +100,11 @@
         (settings.blockReels && /^\/[^/]+\/reels?(?:\/|$)/.test(url.pathname) && !profilePage && !allowedPost) ||
         (settings.hideExplore && url.pathname.startsWith('/explore/') && !['/explore/', '/explore/search/'].includes(url.pathname));
       const searchPage = settings.hideExplore && ['/explore/', '/explore/search/'].includes(url.pathname);
-      doc.documentElement.dataset.jfRoute = blocked ? 'redirecting'
+      const route = blocked ? 'redirecting'
         : following ? 'following' : profilePage ? 'profile' : stories ? 'stories' : searchPage ? 'search' : 'other';
+      doc.documentElement.dataset.jfRoute = route;
+      // Story playback is native; elsewhere a standalone video is the Reels feed in disguise.
+      doc.documentElement.toggleAttribute('data-jf-hide-standalone-videos', !reelsAllowed && route !== 'stories');
       if (blocked && redirectFrom !== url.href) {
         redirectFrom = url.href;
         navigate(`${url.origin}/?variant=following`);
@@ -206,7 +209,7 @@
     doc.addEventListener('play', event => {
       if (!ready) return;
       if (event.target.closest('[data-jf-hidden]') ||
-        (!doc.documentElement.hasAttribute('data-jf-reels') && !win.location.pathname.startsWith('/stories/') &&
+        (doc.documentElement.hasAttribute('data-jf-hide-standalone-videos') &&
           event.target.matches('video') && markStandaloneVideo(event.target.closest('article')))) event.target.pause();
     }, true);
     doc.addEventListener('click', event => {
