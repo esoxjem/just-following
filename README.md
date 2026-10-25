@@ -93,6 +93,15 @@ natively. No extension-source console errors observed. Sponsored feed posts and
 the Stories rail were not supplied, so those cases remain unverified live. Test
 preferences and the original installed extension were restored afterward.
 
+Safari release validation (2026-10-25, 0.1.1 build 3): signed Release archive
+and registered-device IPA built successfully. The IPA signature verifies, and
+all shared runtime files match the release source. Installed and launched on the
+paired iPhone 15; device metadata confirms 0.1.1 (3). In the signed-in iPhone Air
+simulator, the settings popup loads, Home and direct Reels routes return to
+Following, and the mobile Reels entry is hidden. Safari Web Inspector could not
+be reached because its UI timed out, so this run does not establish a clean
+Safari console or exhaustive mobile behavior coverage.
+
 ## License
 
 [MIT](LICENSE). Copyright (c) 2026 Arun Sasidharan.
